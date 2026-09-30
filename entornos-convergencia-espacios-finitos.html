@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entornos y convergencia en espacios finitos</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--text:#172033;--muted:#667085;--line:#dde3ea;--soft:#eef2f6;--accent:#27364f;--ok:#edf8f0;--okb:#a8d1b2;--bad:#fff1f1;--badb:#e4aaaa;--warn:#fff9e9;--warnb:#e6d08c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5}.wrap{max-width:1100px;margin:26px auto;padding:0 16px 44px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:16px}h1{font-size:26px;margin:0 0 6px}h2{font-size:20px;margin:0 0 12px}h3{font-size:16px;margin:0 0 8px}.muted{color:var(--muted)}.box{border:1px solid var(--line);border-radius:14px;padding:16px;background:#fbfcfd}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px}.check{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fbfcfd}.formula{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#f4f6f8;border-radius:6px;padding:2px 6px}.badge{display:inline-block;padding:3px 10px;border-radius:999px;background:#e9edf2;font-size:12px;font-weight:700;color:#46556f;margin-bottom:8px}select{width:100%;padding:10px;border-radius:9px;border:1px solid var(--line);background:#fff;font:inherit}.checkboxes{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}.checkboxes label{padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:#fff}.result{margin-top:14px;padding:15px;border-radius:12px;border:1px solid var(--line);background:var(--soft)}.ok{background:var(--ok);border-color:var(--okb)}.bad{background:var(--bad);border-color:var(--badb)}.warn{background:var(--warn);border-color:var(--warnb)}.yes{color:#1b6e3a;font-weight:700}.no{color:#9b2727;font-weight:700}.seq{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.seq span{background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-weight:700}.challenge{background:#f8fafc;border:1px dashed var(--line);border-radius:12px;padding:14px;margin-top:10px}@media(max-width:760px){.grid{grid-template-columns:1fr}.card{padding:16px}}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="wrap">
+<section class="card">
+<h1>Entornos, menor abierto y convergencia de sucesiones</h1>
+<p class="muted">Explorá un espacio topológico finito $X=\{a,b,c,d\}$: hallá $U_x$, verificá cuándo un conjunto es entorno de $x$, contá los entornos y analizá límites de sucesiones.</p>
+<div class="box">
+<div class="badge">Topología de X</div>
+<select id="topo">
+<option value="e1">Ejemplo 1: {∅, {a}, {b,c}, {a,b,c}, X}</option>
+<option value="e2">Ejemplo 2: {∅, {a}, {a,b}, {a,b,c}, X}</option>
+<option value="particular">Topología del punto particular a</option>
+<option value="discreta">Topología discreta</option>
+<option value="indiscreta">Topología indiscreta</option>
+</select>
+<p class="muted">Abiertos: <span id="tau" class="formula"></span></p>
+</div>
+</section>
+
+<section class="card">
+<h2>1. Entornos y menor abierto $U_x$</h2>
+<p class="muted">En un espacio finito, $U_x=\bigcap\{U\in\tau:x\in U\}$ es el menor abierto que contiene a $x$. Además, $N$ es entorno de $x$ si y solo si $U_x\subseteq N$.</p>
+<div class="grid">
+<div class="box">
+<label for="point"><strong>Elegí un punto</strong></label>
+<select id="point"><option>a</option><option selected>b</option><option>c</option><option>d</option></select>
+<p>Menor abierto: <strong id="ux" class="formula"></strong></p>
+</div>
+<div class="box">
+<strong>Elegí un subconjunto candidato N</strong>
+<div class="checkboxes">
+<label><input type="checkbox" class="ncheck" value="a"> a</label>
+<label><input type="checkbox" class="ncheck" value="b" checked> b</label>
+<label><input type="checkbox" class="ncheck" value="c" checked> c</label>
+<label><input type="checkbox" class="ncheck" value="d"> d</label>
+</div>
+<p>N = <strong id="nset" class="formula"></strong></p>
+</div>
+</div>
+<div id="neighResult" class="result"></div>
+<div class="checks">
+<div class="check"><strong>$|X|$</strong><div id="n">4</div></div>
+<div class="check"><strong>$|U_x|$</strong><div id="m"></div></div>
+<div class="check"><strong>$|\mathcal V(x)|=2^{n-m}$</strong><div id="count"></div></div>
+</div>
+<p><strong>Todos los entornos:</strong> <span id="allNeigh" class="formula"></span></p>
+</section>
+
+<section class="card">
+<h2>2. Convergencia de sucesiones</h2>
+<p class="muted">En un espacio finito, $x_n\to x$ si y solo si la sucesión queda eventualmente dentro de $U_x$.</p>
+<div class="grid">
+<div class="box">
+<label for="seq"><strong>Elegí una sucesión</strong></label>
+<select id="seq">
+<option value="bc">b, c, b, c, ...</option>
+<option value="a">a, a, a, ...</option>
+<option value="c">a, b, d, c, c, c, ...</option>
+<option value="ab">a, b, a, b, ...</option>
+</select>
+</div>
+<div class="box"><strong>Primeros términos</strong><div id="preview" class="seq"></div></div>
+</div>
+<div id="limits" class="checks"></div>
+<div id="summary" class="result"></div>
+</section>
+
+<section class="card">
+<h2>3. Verificador de bases</h2>
+<p class="muted">Una familia $\mathcal B\subseteq\tau$ es base si todo abierto es unión de elementos de $\mathcal B$.</p>
+<select id="base">
+<option value="b1">B₁ = {{a}, {b,c}, X}</option>
+<option value="b2">B₂ = {{a}, {a,b,c}, X}</option>
+</select>
+<div id="baseResult" class="result"></div>
+</section>
+
+<section class="card">
+<h2>4. Desafíos</h2>
+<div class="challenge">En la topología indiscreta, determiná $U_x$ y la cantidad de entornos de cada punto.</div>
+<div class="challenge">En el Ejemplo 1, explicá por qué la sucesión $b,c,b,c,\dots$ converge a $b$, $c$ y $d$, pero no a $a$.</div>
+<div class="challenge">Si en este contexto finito $U_d=X$, explicá por qué $d$ tiene un único entorno.</div>
+</section>
+</div>
+
+<script>
+(function(){
+"use strict";
+const X=["a","b","c","d"];
+const key=A=>[...A].sort().join("|");
+const fmt=A=>A.length?"{"+A.join(", ")+"}":"∅";
+const power=A=>A.reduce((s,v)=>s.concat(s.map(t=>[...t,v])),[[]]);
+function topology(p){
+ if(p==="e1") return [[],["a"],["b","c"],["a","b","c"],X];
+ if(p==="e2") return [[],["a"],["a","b"],["a","b","c"],X];
+ if(p==="particular") return power(X).filter(s=>s.length===0||s.includes("a"));
+ if(p==="discreta") return power(X);
+ return [[],X];
+}
+function ux(x,tau){const c=tau.filter(U=>U.includes(x));return X.filter(e=>c.every(U=>U.includes(e)));}
+function selectedN(){return [...document.querySelectorAll(".ncheck:checked")].map(x=>x.value).sort();}
+function typeset(){if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetClear?.();MathJax.typesetPromise().catch(()=>{});}}
+function updateNeighborhood(){
+ const tau=topology(document.getElementById("topo").value),x=document.getElementById("point").value,U=ux(x,tau),N=selectedN();
+ document.getElementById("tau").textContent="{"+tau.map(fmt).join(", ")+"}";
+ document.getElementById("ux").textContent=fmt(U);document.getElementById("nset").textContent=fmt(N);
+ const ok=U.every(e=>N.includes(e)),r=document.getElementById("neighResult");
+ r.className="result "+(ok?"ok":"bad");
+ r.innerHTML=ok?'<span class="yes">Sí. N es entorno de '+x+'.</span> Contiene a U<sub>'+x+'</sub> = '+fmt(U)+'.':'<span class="no">No. N no es entorno de '+x+'.</span> No contiene a U<sub>'+x+'</sub> = '+fmt(U)+'.';
+ document.getElementById("m").textContent=U.length;document.getElementById("count").textContent=Math.pow(2,X.length-U.length);
+ const outs=X.filter(e=>!U.includes(e));const envs=power(outs).map(s=>[...U,...s].sort()).sort((a,b)=>a.length-b.length||a.join().localeCompare(b.join()));
+ document.getElementById("allNeigh").textContent="{"+envs.map(fmt).join(", ")+"}";
+}
+const seqData={
+ bc:{preview:["b","c","b","c","b","c"],event:["b","c"],n0:1},
+ a:{preview:["a","a","a","a","a","a"],event:["a"],n0:1},
+ c:{preview:["a","b","d","c","c","c"],event:["c"],n0:4},
+ ab:{preview:["a","b","a","b","a","b"],event:["a","b"],n0:1}
+};
+function updateSequence(){
+ const tau=topology(document.getElementById("topo").value),s=seqData[document.getElementById("seq").value];
+ document.getElementById("preview").innerHTML=s.preview.map(t=>"<span>"+t+"</span>").join("")+" …";
+ const limits=[];
+ document.getElementById("limits").innerHTML=X.map(x=>{const U=ux(x,tau),ok=s.event.every(t=>U.includes(t));if(ok)limits.push(x);return '<div class="check"><strong>¿Converge a '+x+'?</strong><div>U<sub>'+x+'</sub> = <span class="formula">'+fmt(U)+'</span></div><div>'+(ok?'<span class="yes">Sí</span>, desde n ≥ '+s.n0:'<span class="no">No</span>')+'</div></div>';}).join("");
+ const sum=document.getElementById("summary");
+ if(!limits.length){sum.className="result bad";sum.innerHTML="<strong>No converge a ningún punto de X.</strong>";}
+ else if(limits.length===1){sum.className="result ok";sum.innerHTML="<strong>Límite único:</strong> "+limits[0]+".";}
+ else{sum.className="result warn";sum.innerHTML="<strong>Tiene varios límites:</strong> "+fmt(limits)+". En un espacio Hausdorff (T₂), una sucesión no puede tener dos límites distintos.";}
+}
+function updateBase(){
+ const tau=topology(document.getElementById("topo").value),keys=new Set(tau.map(key)),choice=document.getElementById("base").value;
+ const B=choice==="b1"?[["a"],["b","c"],X]:[["a"],["a","b","c"],X];
+ let ok=B.every(b=>keys.has(key(b))),reason="";
+ if(ok){outer:for(const U of tau){for(const x of U){if(!B.some(b=>b.includes(x)&&b.every(e=>U.includes(e)))){ok=false;reason="Para U = "+fmt(U)+" y x = "+x+" no hay B ∈ 𝓑 con x ∈ B ⊆ U.";break outer;}}}}
+ else reason="La familia contiene conjuntos que no son abiertos de la topología seleccionada.";
+ const box=document.getElementById("baseResult");box.className="result "+(ok?"ok":"bad");box.innerHTML=ok?'<span class="yes">Sí. Es una base de τ.</span>':'<span class="no">No es una base de τ.</span> '+reason;
+}
+function updateAll(){updateNeighborhood();updateSequence();updateBase();typeset();}
+document.getElementById("topo").addEventListener("change",updateAll);
+document.getElementById("point").addEventListener("change",()=>{updateNeighborhood();typeset();});
+document.querySelectorAll(".ncheck").forEach(c=>c.addEventListener("change",()=>{updateNeighborhood();typeset();}));
+document.getElementById("seq").addEventListener("change",()=>{updateSequence();typeset();});
+document.getElementById("base").addEventListener("change",()=>{updateBase();typeset();});
+updateAll();
+})();
+</script>
+</body>
+</html>
