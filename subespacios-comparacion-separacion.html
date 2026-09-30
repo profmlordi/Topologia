@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Topología: Subespacios, Comparación y Separación - Prof. Lic. Mónica Lordi</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --card: #ffffff;
+    --text: #172033;
+    --muted: #667085;
+    --line: #dde3ea;
+    --soft: #eef2f6;
+    --accent: #1e3a8a;
+    --accent-hover: #1e293b;
+    --ok: #edf8f0;
+    --okb: #a8d1b2;
+    --bad: #fff1f1;
+    --badb: #e4aaaa;
+    --warn: #fff9e9;
+    --warnb: #e6d08c;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+  }
+
+  .wrap {
+    max-width: 1100px;
+    margin: 24px auto;
+    padding: 0 16px 44px;
+  }
+
+  .header-card {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    color: #ffffff;
+    border-radius: 18px;
+    padding: 26px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+  }
+
+  .header-card h1 {
+    font-size: 26px;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+    font-weight: 800;
+  }
+
+  .header-card p {
+    margin: 0;
+    opacity: 0.94;
+    font-size: 15px;
+  }
+
+  .meta-tag {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+  }
+
+  h2 { font-size: 20px; margin: 0 0 12px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  h3 { font-size: 16px; margin: 0 0 8px; color: #334155; }
+  p { margin: 0 0 10px; }
+
+  .muted { color: var(--muted); }
+
+  .formula {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: #f1f5f9;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 0.93em;
+    color: #0f172a;
+    display: inline-block;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    font-size: 12px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 8px;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 14px;
+  }
+
+  .box {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    background: #f8fafc;
+  }
+
+  select, input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 9px;
+    border: 1px solid var(--line);
+    background: #ffffff;
+    color: var(--text);
+    font: inherit;
+    margin-top: 4px;
+  }
+
+  .checkbox-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    background: #ffffff;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    user-select: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .checkbox-label:hover {
+    border-color: #cbd5e1;
+  }
+
+  button {
+    border: 0;
+    border-radius: 10px;
+    padding: 8px 16px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .primary { background: var(--accent); color: #ffffff; }
+  .primary:hover { background: var(--accent-hover); }
+  .secondary { background: #e2e8f0; color: #1e293b; }
+  .secondary:hover { background: #cbd5e1; }
+
+  .result {
+    margin-top: 14px;
+    padding: 15px 18px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--soft);
+  }
+
+  .ok { background: var(--ok); border-color: var(--okb); }
+  .bad { background: var(--bad); border-color: var(--badb); }
+  .warn { background: var(--warn); border-color: var(--warnb); }
+
+  .checks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .check-card {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    background: #ffffff;
+  }
+
+  .check-card strong { display: block; margin-bottom: 4px; font-size: 14px; color: #1e293b; }
+
+  .yes { color: #15803d; font-weight: 700; }
+  .no { color: #b91c1c; font-weight: 700; }
+
+  .nav-tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 2px solid var(--line);
+    margin-bottom: 18px;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    background: transparent;
+    border: none;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  @media (max-width: 760px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .card { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- Header Card -->
+  <div class="header-card">
+    <div class="meta-tag">TOPOLOGÍA · PROF. LIC. MÓNICA LORDI</div>
+    <h1>Subespacios, comparación de topologías y separación</h1>
+    <p>Aplicación interactiva para trabajar contenidos complementarios de Topología.</p>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('tab1', event)">1. Topología relativa</button>
+    <button class="tab-btn" onclick="switchTab('tab2', event)">2. Comparación de topologías</button>
+    <button class="tab-btn" onclick="switchTab('tab3', event)">3. Axiomas de separación</button>
+  </div>
+
+  <!-- TAB 1: RELATIVE TOPOLOGY -->
+  <div class="tab-content active" id="tab1">
+    <section class="card">
+      <h2>1. Topología relativa y subespacios</h2>
+      <p class="muted">
+        Dado A ⊆ X, la topología relativa es T<sub>A</sub> = {A ∩ U : U ∈ T}. Importante: los conjuntos abiertos/cerrados en A no siempre son abiertos/cerrados en X. Además, Cl<sub>A</sub>(B) = A ∩ Cl<sub>X</sub>(B).
+      </p>
+
+      <!-- Interactive Subspace Calculator -->
+      <div class="box" style="margin-bottom: 16px;">
+        <div class="badge">Calculadora de Subespacios Finitos (X = {a, b, c, d})</div>
+        <p style="font-size:13px;" class="muted">Topología base T = {∅, {a}, {b,c}, {a,b,c}, X}</p>
+        <label style="font-weight:600; font-size:13px; display:block; margin-top:8px;">Seleccionar subconjunto A ⊆ X:</label>
+        <div class="checkbox-group">
+          <label class="checkbox-label"><input type="checkbox" class="rel-check" value="a" checked onchange="updateRelativeTopology()"> a</label>
+          <label class="checkbox-label"><input type="checkbox" class="rel-check" value="b" onchange="updateRelativeTopology()"> b</label>
+          <label class="checkbox-label"><input type="checkbox" class="rel-check" value="c" checked onchange="updateRelativeTopology()"> c</label>
+          <label class="checkbox-label"><input type="checkbox" class="rel-check" value="d" checked onchange="updateRelativeTopology()"> d</label>
+        </div>
+
+        <div id="relativeCalcResult" class="result ok" style="margin-top:12px;"></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="box">
+          <div class="badge">Ejemplo (A = {a,c,d})</div>
+          <p style="font-size:13px;">X = {a,b,c,d}, T = {∅, {a}, {b,c}, {a,b,c}, X} y A = {a,c,d}.</p>
+          <div style="margin-top:8px;">
+            <strong>Abiertos relativos T<sub>A</sub>:</strong>
+            <div class="formula" style="margin-top:4px;">{∅, {a}, {c}, {a,c}, A}</div>
+          </div>
+          <p class="muted" style="font-size:13px; margin-top:8px;">
+            ¡Atención! {c} es abierto en A porque {c} = A ∩ {b,c}, aunque {c} NO era abierto en X.
+          </p>
+        </div>
+
+        <div class="box">
+          <div class="badge">Subespacio en ℝ (Intervalos)</div>
+          <p style="font-size:13px;">X = ℝ usual, A = (0,1) y F = (0, 1/2].</p>
+          <div class="result ok" id="subspaceContinuousResult" style="margin-top:8px;">
+            F = A ∩ (-∞, 1/2] ⟹ F <strong>es CERRADO en A</strong>.<br/>
+            Cl<sub>A</sub>(F) = A ∩ Cl<sub>ℝ</sub>(F) = (0,1) ∩ [0, 1/2] = (0, 1/2].<br/>
+            F no es abierto en A.
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- TAB 2: TOPOLOGY COMPARISON -->
+  <div class="tab-content" id="tab2">
+    <section class="card">
+      <h2>2. Comparación de topologías</h2>
+      <p class="muted">
+        Una topología T<sub>1</sub> es más fina que T<sub>2</sub> (o T<sub>2</sub> es más gruesa que T<sub>1</sub>) si T<sub>2</sub> ⊆ T<sub>1</sub> (es decir, todo abierto de T<sub>2</sub> también es abierto en T<sub>1</sub>).
+      </p>
+
+      <!-- Interactive Topology Comparison Tool -->
+      <div class="box" style="margin-bottom: 16px;">
+        <div class="badge">Simulador de Comparación sobre X = {a, b, c}</div>
+        <div class="grid-2">
+          <div>
+            <label style="font-weight:600; font-size:13px;">Topología T<sub>1</sub>:</label>
+            <select id="topoCompare1" onchange="updateTopologyComparison()">
+              <option value="indiscrete">T_ind = {∅, X}</option>
+              <option value="sierpinski">T_a = {∅, {a}, X}</option>
+              <option value="ejemplo_cadena" selected>T_cad = {∅, {a}, {a,b}, X}</option>
+              <option value="discrete">T_disc = P(X)</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-weight:600; font-size:13px;">Topología T<sub>2</sub>:</label>
+            <select id="topoCompare2" onchange="updateTopologyComparison()">
+              <option value="indiscrete">T_ind = {∅, X}</option>
+              <option value="sierpinski">T_a = {∅, {a}, X}</option>
+              <option value="ejemplo_cadena">T_cad = {∅, {a}, {a,b}, X}</option>
+              <option value="discrete" selected>T_disc = P(X)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="comparisonResultBox" class="result" style="margin-top:12px;"></div>
+      </div>
+
+      <div class="box">
+        <div class="badge">Cadena de Topologías en ℝ (Orden de Finesa)</div>
+        <div style="font-size:15px; font-weight:700; color:var(--accent); margin-top:6px;">
+          T<sub>ind</sub> ⊊ T<sub>cof</sub> ⊊ T<sub>usual</sub> ⊊ T<sub>s</sub> ⊊ T<sub>disc</sub>
+        </div>
+        <p class="muted" style="font-size:13px; margin-top:8px;">
+          • T<sub>s</sub> es la topología del límite superior (Sorgenfrey, con base B<sub>s</sub> = {(a,b]}).<br/>
+          • <strong>Regla para Sucesiones:</strong> Si una topología es más fina, le exige MÁS a las sucesiones para converger. Por ende, si x<sub>n</sub> → x en T<sub>1</sub> y T<sub>2</sub> ⊆ T<sub>1</sub>, entonces x<sub>n</sub> → x también en T<sub>2</sub>.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <!-- TAB 3: SEPARATION AXIOMS -->
+  <div class="tab-content" id="tab3">
+    <section class="card">
+      <h2>3. Axiomas de separación</h2>
+      <p class="muted">
+        Jerarquía de separación: T<sub>2</sub> (Hausdorff) ⟹ T<sub>1</sub> (Fréchet) ⟹ T<sub>0</sub> (Kolmogorov).
+      </p>
+
+      <div class="checks-grid">
+        <div class="check-card">
+          <strong>T<sub>0</sub> (Kolmogorov)</strong>
+          <span class="muted" style="font-size:13px;">∀ x ≠ y, existe un abierto que contiene a uno y excluye al otro.</span>
+        </div>
+        <div class="check-card">
+          <strong>T<sub>1</sub> (Fréchet)</strong>
+          <span class="muted" style="font-size:13px;">∀ x ≠ y, cada uno posee un abierto que excluye al otro ⟺ Todo unitario {x} es cerrado.</span>
+        </div>
+        <div class="check-card">
+          <strong>T<sub>2</sub> (Hausdorff)</strong>
+          <span class="muted" style="font-size:13px;">∀ x ≠ y, existen abiertos U y V tales que x ∈ U, y ∈ V y U ∩ V = ∅. En este caso, una sucesión no puede converger a dos puntos distintos.</span>
+        </div>
+      </div>
+
+      <div class="box" style="margin-top:16px;">
+        <div class="badge">Analizador de Axiomas de Separación</div>
+        <select id="separationPreset" onchange="updateSeparationSection()">
+          <option value="lordi_ex2">Ejemplo: X={a,b,c,d}, T={∅, {a}, {b,c}, {a,b,c}, X}</option>
+          <option value="ejemplo_cadena">Ejemplo: X={a,b,c}, T={∅, {a}, {a,b}, X}</option>
+          <option value="sierpinski">Espacio de Sierpiński: X={a,b}, T={∅, {a}, X}</option>
+          <option value="cofinite_inf">Topología cofinita en conjunto infinito</option>
+          <option value="usual_r">Topología usual en ℝ</option>
+        </select>
+        <div class="result" id="separationResultBox" style="margin-top:12px;"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function() {
+  "use strict";
+
+  const X_base = ["a", "b", "c", "d"];
+  const T_base = [[], ["a"], ["b","c"], ["a","b","c"], ["a","b","c","d"]];
+
+  function fmtText(arr) {
+    if (!arr || arr.length === 0) return "∅";
+    return "{" + arr.join(", ") + "}";
+  }
+
+  window.switchTab = function(tabId, evt) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+    if (evt && evt.target) {
+      evt.target.classList.add('active');
+    }
+    const target = document.getElementById(tabId);
+    if (target) target.classList.add('active');
+  };
+
+  window.updateRelativeTopology = function() {
+    const checked = Array.from(document.querySelectorAll('.rel-check:checked')).map(cb => cb.value);
+    const box = document.getElementById("relativeCalcResult");
+
+    if (checked.length === 0) {
+      box.className = "result warn";
+      box.innerHTML = "Seleccioná al menos un elemento para formar el subconjunto A.";
+      return;
+    }
+
+    const relOpensMap = {};
+    const relOpensList = [];
+
+    T_base.forEach(u => {
+      const intersect = u.filter(elem => checked.includes(elem)).sort();
+      const k = intersect.join(",");
+      if (!relOpensMap[k]) {
+        relOpensMap[k] = true;
+        relOpensList.push(intersect);
+      }
+    });
+
+    relOpensList.sort((a,b) => a.length - b.length || a.join().localeCompare(b.join()));
+
+    const newOpens = relOpensList.filter(u => {
+      const uStr = u.join(",");
+      return !T_base.some(orig => orig.join(",") === uStr);
+    });
+
+    box.className = "result ok";
+    box.innerHTML = `
+      <strong>Subespacio A = ${fmtText(checked)}:</strong><br/>
+      • <strong>Topología Relativa T<sub>A</sub>:</strong> ${fmtText(relOpensList.map(fmtText))}<br/>
+      ${newOpens.length > 0 ? 
+        `• <span class="yes">¡Atención!</span> Conjuntos abiertos en A que NO eran abiertos en X: <strong>${fmtText(newOpens.map(fmtText))}</strong>.` : 
+        `• Todos los abiertos relativos ya eran abiertos en el espacio original X.`}
+    `;
+  };
+
+  const topoSamples = {
+    indiscrete: { name: "T_ind", sets: [[], ["a","b","c"]] },
+    sierpinski: { name: "T_a", sets: [[], ["a"], ["a","b","c"]] },
+    ejemplo_cadena: { name: "T_cad", sets: [[], ["a"], ["a","b"], ["a","b","c"]] },
+    discrete:   { name: "T_disc", sets: [[], ["a"], ["b"], ["c"], ["a","b"], ["a","c"], ["b","c"], ["a","b","c"]] }
+  };
+
+  window.updateTopologyComparison = function() {
+    const k1 = document.getElementById("topoCompare1").value;
+    const k2 = document.getElementById("topoCompare2").value;
+    const t1 = topoSamples[k1];
+    const t2 = topoSamples[k2];
+    const box = document.getElementById("comparisonResultBox");
+
+    const t1_in_t2 = t1.sets.every(s1 => t2.sets.some(s2 => s1.join(",") === s2.join(",")));
+    const t2_in_t1 = t2.sets.every(s2 => t1.sets.some(s1 => s1.join(",") === s2.join(",")));
+
+    if (k1 === k2) {
+      box.className = "result ok";
+      box.innerHTML = `<strong>Topologías idénticas:</strong> ${t1.name} = ${t2.name}.`;
+    } else if (t1_in_t2 && !t2_in_t1) {
+      box.className = "result ok";
+      box.innerHTML = `
+        <strong>Relación de Inclusión:</strong> ${t1.name} ⊊ ${t2.name}.<br/>
+        • <strong>${t2.name} es MÁS FINA</strong> que ${t1.name}.<br/>
+        • <strong>${t1.name} es MÁS GRUESA</strong> que ${t2.name}.
+      `;
+    } else if (!t1_in_t2 && t2_in_t1) {
+      box.className = "result ok";
+      box.innerHTML = `
+        <strong>Relación de Inclusión:</strong> ${t2.name} ⊊ ${t1.name}.<br/>
+        • <strong>${t1.name} es MÁS FINA</strong> que ${t2.name}.<br/>
+        • <strong>${t2.name} es MÁS GRUESA</strong> que ${t1.name}.
+      `;
+    } else {
+      box.className = "result warn";
+      box.innerHTML = `<strong>Incomparables:</strong> Ninguna de las dos topologías contiene a la otra.`;
+    }
+  };
+
+  window.updateSeparationSection = function() {
+    const val = document.getElementById("separationPreset").value;
+    const box = document.getElementById("separationResultBox");
+
+    if (val === "lordi_ex2") {
+      box.className = "result warn";
+      box.innerHTML = `
+        <strong>Ejemplo (X={a,b,c,d}):</strong><br>
+        • <strong>T<sub>0</sub>:</strong> NO. Los puntos b y c tienen exactamente los mismos abiertos que los contienen: {b,c}, {a,b,c} y X. Ningún abierto distingue a b de c.<br>
+        • <strong>T<sub>1</sub>:</strong> NO. No existe un abierto que contenga a b y excluya a c, ni uno que contenga a c y excluya a b.<br>
+        • <strong>T<sub>2</sub>:</strong> NO, ya que T<sub>2</sub> implica T<sub>1</sub>.
+      `;
+    } else if (val === "ejemplo_cadena") {
+      box.className = "result warn";
+      box.innerHTML = `
+        <strong>Ejemplo (X={a,b,c}):</strong><br>
+        • <strong>T<sub>0</sub>:</strong> SÍ ({a} distingue a de b y c; {a,b} distingue b de c).<br>
+        • <strong>T<sub>1</sub>:</strong> NO (no hay abierto que contenga a b sin contener a a).<br>
+        • <strong>T<sub>2</sub>:</strong> NO.
+      `;
+    } else if (val === "sierpinski") {
+      box.className = "result warn";
+      box.innerHTML = `
+        <strong>Espacio de Sierpiński (X={a,b}, T={∅, {a}, X}):</strong><br>
+        • <strong>T<sub>0</sub>:</strong> SÍ ({a} contiene a a pero no a b).<br>
+        • <strong>T<sub>1</sub>:</strong> NO (el único abierto que contiene a b es X).<br>
+        • <strong>T<sub>2</sub>:</strong> NO.
+      `;
+    } else if (val === "cofinite_inf") {
+      box.className = "result warn";
+      box.innerHTML = `
+        <strong>Topología cofinita en X infinito:</strong><br>
+        • <strong>T<sub>0</sub> y T<sub>1</sub>:</strong> SÍ (todos los unitarios son cerrados).<br>
+        • <strong>T<sub>2</sub>:</strong> NO. Dos abiertos no vacíos siempre se intersectan.
+      `;
+    } else if (val === "usual_r") {
+      box.className = "result ok";
+      box.innerHTML = `
+        <strong>Topología usual en ℝ:</strong><br>
+        • Cumple <strong>T<sub>0</sub>, T<sub>1</sub> y T<sub>2</sub></strong>.<br>
+        <span style="font-size:13px;" class="muted">Por ser Hausdorff, una sucesión convergente converge a un solo punto.</span>
+      `;
+    }
+  };
+
+  // Initial load
+  updateRelativeTopology();
+  updateTopologyComparison();
+  updateSeparationSection();
+})();
+</script>
+</body>
+</html>
