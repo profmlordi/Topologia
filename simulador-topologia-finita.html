@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Simulador de Topología Finita</title>
+<style>
+  :root{
+    --bg:#f7f7f8; --card:#ffffff; --text:#1b1b1f; --muted:#67676f;
+    --line:#d9d9df; --soft:#f1f1f4; --accent:#315ac7;
+    --ok:#e9f7ed; --okb:#9bc9a7; --bad:#fff0f0; --badb:#e3a8a8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  .wrap{max-width:1050px;margin:24px auto;padding:0 16px 42px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:16px}
+  h1{font-size:28px;margin:0 0 6px}
+  h2{font-size:20px;margin:0 0 12px}
+  p{line-height:1.5}
+  .muted{color:var(--muted)}
+  .space{font-size:20px;font-weight:750;padding:10px 14px;background:var(--soft);border-radius:12px;display:inline-block}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+  button,select{font:inherit}
+  button{border:0;border-radius:10px;padding:10px 14px;font-weight:750;cursor:pointer}
+  .primary{background:var(--accent);color:white}
+  .secondary{background:#eceef3;color:#20232a}
+  .danger{background:#f7e8e8;color:#7c2020}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .subset-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+  .subset-btn{
+    min-height:45px;border:1px solid var(--line);background:white;color:var(--text);
+    border-radius:10px;padding:8px;cursor:pointer;font-weight:650
+  }
+  .subset-btn.selected{background:#e8edff;border-color:#8ea6f0;color:#1f3e9f}
+  .subset-btn:focus{outline:3px solid #b9c8f8;outline-offset:1px}
+  .result{margin-top:14px;padding:15px;border-radius:12px;line-height:1.55}
+  .ok{background:var(--ok);border:1px solid var(--okb)}
+  .bad{background:var(--bad);border:1px solid var(--badb)}
+  .neutral{background:var(--soft);border:1px solid var(--line)}
+  .axioms{display:grid;gap:8px;margin-top:10px}
+  .axiom{padding:10px 12px;border-radius:10px;background:#fafafa;border:1px solid #e8e8eb}
+  .status{font-weight:800}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .metric{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fafafa}
+  .metric strong{display:block;margin-bottom:5px}
+  .hidden{display:none}
+  .small{font-size:13px;color:var(--muted)}
+  .scorm{display:none;margin-bottom:14px;padding:10px 12px;border-radius:10px;background:#fff7df;border:1px solid #e8cf83;color:#6b5715}
+  @media(max-width:760px){.two{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}.card{padding:15px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="card">
+<h1>Simulador de Topología Finita</h1>
+<p class="muted" style="margin-top:0">Construí una familia de subconjuntos y verificá si define una topología. Si es topología, explorá interior, cierre, frontera y exterior.</p>
+<div class="space">X = {a, b, c, d}</div>
+</div>
+<div class="card">
+<h2>1. Construcción de la familia τ</h2>
+<p class="muted">Tocá los subconjuntos que querés incluir en τ.</p>
+<div class="toolbar">
+<button class="secondary" id="exampleBtn" type="button">Cargar ejemplo válido</button>
+<button class="secondary" id="badExampleBtn" type="button">Cargar ejemplo que falla</button>
+<button class="danger" id="clearBtn" type="button">Vaciar τ</button>
+</div>
+<div class="subset-grid" id="subsetGrid"></div>
+<div class="toolbar">
+<button class="primary" id="verifyBtn" type="button">Verificar si es topología</button>
+</div>
+<div aria-live="polite" class="result neutral" id="verifyResult">
+      Todavía no verificaste la familia.
+    </div>
+</div>
+<div class="card hidden" id="analysisCard">
+<h2>2. Exploración de un subconjunto A</h2>
+<p class="muted">Elegí los elementos de A. El cálculo usa exclusivamente la topología τ que construiste.</p>
+<div class="toolbar" id="aButtons"></div>
+<div class="metrics">
+<div class="metric"><strong>A</strong><span id="aOut"></span></div>
+<div class="metric"><strong>Interior int(A)</strong><span id="intOut"></span></div>
+<div class="metric"><strong>Cierre cl(A)</strong><span id="clOut"></span></div>
+<div class="metric"><strong>Frontera Fr(A)</strong><span id="frOut"></span></div>
+<div class="metric"><strong>Exterior ext(A)</strong><span id="extOut"></span></div>
+<div class="metric"><strong>¿A es abierto / cerrado?</strong><span id="ocOut"></span></div>
+</div>
+<div class="result neutral" id="explainBox"></div>
+
+
+</div>
+</div>
+<script>
+(function(){
+"use strict";
+
+const X = ["a","b","c","d"];
+const allMasks = Array.from({length:16},(_,i)=>i);
+let tau = new Set();
+let A = 0;
+let verifiedTopology = false;
+
+// ---------- versión web independiente ----------
+const scormReady = false;
+function scormSet(){ }
+function scormCommit(){ }
+
+// ---------- conjuntos ----------
+function has(mask,i){ return (mask & (1<<i))!==0; }
+function fmt(mask){
+  if(mask===0) return "∅";
+  const els=X.filter((_,i)=>has(mask,i));
+  return "{"+els.join(", ")+"}";
+}
+function union(a,b){ return a|b; }
+function inter(a,b){ return a&b; }
+function comp(a){ return 15 ^ a; }
+function subset(a,b){ return (a & ~b)===0; }
+
+function renderSubsetGrid(){
+  const g=document.getElementById("subsetGrid");
+  g.innerHTML="";
+  allMasks.forEach(m=>{
+    const b=document.createElement("button");
+    b.type="button";
+    b.className="subset-btn"+(tau.has(m)?" selected":"");
+    b.textContent=fmt(m);
+    b.setAttribute("aria-pressed",tau.has(m)?"true":"false");
+    b.addEventListener("click",()=>{
+      if(tau.has(m)) tau.delete(m); else tau.add(m);
+      verifiedTopology=false;
+      document.getElementById("analysisCard").classList.add("hidden");
+      renderSubsetGrid();
+      document.getElementById("verifyResult").className="result neutral";
+      document.getElementById("verifyResult").textContent="Familia modificada. Volvé a verificar.";
+    });
+    g.appendChild(b);
+  });
+}
+
+function topologyCheck(){
+  const fail = [];
+  const hasEmpty=tau.has(0), hasX=tau.has(15);
+  if(!hasEmpty || !hasX){
+    fail.push({
+      axiom:"Axioma 1",
+      msg:`Debe contener ∅ y X.${!hasEmpty?" Falta ∅.":""}${!hasX?" Falta X.":""}`
+    });
+  }
+
+  let unionWitness=null;
+  const arr=[...tau];
+  outerU:
+  for(let i=0;i<arr.length;i++){
+    for(let j=i;j<arr.length;j++){
+      const u=union(arr[i],arr[j]);
+      if(!tau.has(u)){ unionWitness=[arr[i],arr[j],u]; break outerU; }
+    }
+  }
+  if(unionWitness){
+    fail.push({
+      axiom:"Axioma 2",
+      msg:`No es cerrada por uniones: ${fmt(unionWitness[0])} ∪ ${fmt(unionWitness[1])} = ${fmt(unionWitness[2])}, pero ${fmt(unionWitness[2])} ∉ τ.`
+    });
+  }
+
+  let interWitness=null;
+  outerI:
+  for(let i=0;i<arr.length;i++){
+    for(let j=i;j<arr.length;j++){
+      const q=inter(arr[i],arr[j]);
+      if(!tau.has(q)){ interWitness=[arr[i],arr[j],q]; break outerI; }
+    }
+  }
+  if(interWitness){
+    fail.push({
+      axiom:"Axioma 3",
+      msg:`No es cerrada por intersecciones finitas: ${fmt(interWitness[0])} ∩ ${fmt(interWitness[1])} = ${fmt(interWitness[2])}, pero ${fmt(interWitness[2])} ∉ τ.`
+    });
+  }
+
+  return fail;
+}
+
+function verify(){
+  const box=document.getElementById("verifyResult");
+  const fail=topologyCheck();
+
+  if(fail.length===0){
+    verifiedTopology=true;
+    box.className="result ok";
+    box.innerHTML=`<div class="status">Sí. τ es una topología sobre X.</div>
+      <div class="axioms">
+        <div class="axiom">✓ ∅ y X pertenecen a τ.</div>
+        <div class="axiom">✓ En este espacio finito, las uniones de abiertos permanecen en τ.</div>
+        <div class="axiom">✓ Las intersecciones finitas de abiertos permanecen en τ.</div>
+      </div>`;
+    document.getElementById("analysisCard").classList.remove("hidden");
+    renderA();
+    updateAnalysis();
+
+    if(scormReady){
+      scormSet("cmi.core.lesson_status","incomplete");
+      scormSet("cmi.suspend_data",JSON.stringify({tau:[...tau]}));
+      scormCommit();
+    }
+  }else{
+    verifiedTopology=false;
+    box.className="result bad";
+    box.innerHTML=`<div class="status">No. La familia no define una topología.</div>`+
+      `<div class="axioms">${fail.map(f=>`<div class="axiom"><strong>${f.axiom}</strong><br>${f.msg}</div>`).join("")}</div>`;
+    document.getElementById("analysisCard").classList.add("hidden");
+  }
+}
+
+function interior(mask){
+  let out=0;
+  tau.forEach(U=>{ if(subset(U,mask)) out=union(out,U); });
+  return out;
+}
+function closure(mask){
+  return comp(interior(comp(mask)));
+}
+function boundary(mask){
+  return closure(mask) & comp(interior(mask));
+}
+function exterior(mask){
+  return interior(comp(mask));
+}
+function isOpen(mask){ return tau.has(mask); }
+function isClosed(mask){ return tau.has(comp(mask)); }
+
+function renderA(){
+  const row=document.getElementById("aButtons");
+  row.innerHTML="";
+  X.forEach((x,i)=>{
+    const b=document.createElement("button");
+    b.type="button";
+    b.className=has(A,i)?"primary":"secondary";
+    b.textContent=x;
+    b.setAttribute("aria-pressed",has(A,i)?"true":"false");
+    b.addEventListener("click",()=>{
+      A = A ^ (1<<i);
+      renderA();
+      updateAnalysis();
+    });
+    row.appendChild(b);
+  });
+}
+
+function updateAnalysis(){
+  if(!verifiedTopology) return;
+  const I=interior(A), C=closure(A), F=boundary(A), E=exterior(A);
+  document.getElementById("aOut").textContent=fmt(A);
+  document.getElementById("intOut").textContent=fmt(I);
+  document.getElementById("clOut").textContent=fmt(C);
+  document.getElementById("frOut").textContent=fmt(F);
+  document.getElementById("extOut").textContent=fmt(E);
+  document.getElementById("ocOut").textContent=
+    (isOpen(A)?"abierto":"no abierto")+" / "+(isClosed(A)?"cerrado":"no cerrado");
+
+  document.getElementById("explainBox").innerHTML =
+    `<strong>Cómo se obtiene el interior</strong><br>
+     Se unen todos los abiertos U ∈ τ tales que U ⊆ A. Resultado: ${fmt(I)}.<br><br>
+     <strong>Cómo se obtiene el cierre</strong><br>
+     cl(A) = X \\ int(X \\ A). Resultado: ${fmt(C)}.<br><br>
+     <strong>Frontera</strong><br>
+     Fr(A) = cl(A) \\ int(A) = ${fmt(F)}.<br><br>
+     <strong>Exterior</strong><br>
+     ext(A) = int(X \\ A) = ${fmt(E)}.`;
+}
+
+document.getElementById("verifyBtn").addEventListener("click",verify);
+document.getElementById("clearBtn").addEventListener("click",()=>{
+  tau=new Set(); verifiedTopology=false; A=0; renderSubsetGrid();
+  document.getElementById("analysisCard").classList.add("hidden");
+  const box=document.getElementById("verifyResult");
+  box.className="result neutral"; box.textContent="Familia vaciada. Elegí los subconjuntos que formarán τ.";
+});
+document.getElementById("exampleBtn").addEventListener("click",()=>{
+  // τ = {∅, {a}, {c,d}, {a,c,d}, X}
+  tau=new Set([0,1,12,13,15]); verifiedTopology=false; A=0;
+  renderSubsetGrid(); verify();
+});
+document.getElementById("badExampleBtn").addEventListener("click",()=>{
+  // Falla por unión: {a} y {b} están, {a,b} no.
+  tau=new Set([0,1,2,15]); verifiedTopology=false; A=0;
+  renderSubsetGrid(); verify();
+});
+
+renderSubsetGrid();
+})();
+</script>
+</body>
+</html>
