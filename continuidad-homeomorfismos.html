@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Continuidad y homeomorfismos en espacios finitos</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --card:#ffffff; --text:#172033; --muted:#667085;
+    --line:#dde3ea; --soft:#eef2f6; --accent:#27364f; --accent2:#50627f;
+    --ok:#edf8f0; --okb:#a8d1b2; --bad:#fff1f1; --badb:#e4aaaa;
+    --warn:#fff9e9; --warnb:#e6d08c;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+  .wrap{max-width:1100px;margin:26px auto;padding:0 16px 44px}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:22px;margin-bottom:16px;
+  }
+  h1{font-size:28px;margin:0 0 6px}
+  h2{font-size:20px;margin:0 0 12px}
+  h3{font-size:17px;margin:0 0 10px}
+  p{line-height:1.5}
+  .muted{color:var(--muted)}
+  .spaces{
+    display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;
+  }
+  .spacebox{
+    border:1px solid var(--line);border-radius:14px;padding:15px;background:#fbfcfd;
+  }
+  .tau{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:1.7}
+  .mapping-grid{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px;
+  }
+  .mapitem{
+    border:1px solid var(--line);border-radius:12px;padding:12px;background:#fbfcfd;
+  }
+  .mapitem label{display:block;font-weight:700;margin-bottom:8px}
+  select{
+    width:100%;padding:10px;border-radius:9px;border:1px solid var(--line);
+    background:white;color:var(--text);font:inherit;
+  }
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  button{
+    border:0;border-radius:10px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer;
+  }
+  .primary{background:var(--accent);color:#fff}
+  .secondary{background:#e9edf2;color:#1f2937}
+  .ghost{background:#fff;border:1px solid var(--line);color:var(--text)}
+  .result{
+    margin-top:14px;padding:15px;border-radius:12px;line-height:1.55;
+    border:1px solid var(--line);background:var(--soft);
+  }
+  .ok{background:var(--ok);border-color:var(--okb)}
+  .bad{background:var(--bad);border-color:var(--badb)}
+  .warn{background:var(--warn);border-color:var(--warnb)}
+  .checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+  .check{
+    border:1px solid var(--line);border-radius:12px;padding:12px;background:#fbfcfd;
+  }
+  .check strong{display:block;margin-bottom:5px}
+  .yes{color:#1b6e3a}.no{color:#9b2727}
+  .detail{
+    margin-top:12px;border-top:1px solid var(--line);padding-top:12px;
+  }
+  .detail ul{margin:8px 0 0 20px;padding:0}
+  .detail li{margin:5px 0}
+  .formula{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    background:#f4f6f8;border-radius:7px;padding:2px 6px;
+  }
+  .challenge{
+    display:flex;align-items:flex-start;gap:10px;
+    background:#f8fafc;border:1px dashed var(--line);border-radius:12px;padding:14px;margin-top:12px;
+  }
+  .badge{
+    display:inline-block;padding:3px 8px;border-radius:999px;background:#e9edf2;
+    font-size:12px;font-weight:700;color:#46556f;margin-bottom:8px;
+  }
+  .small{font-size:13px;color:var(--muted)}
+  .hidden{display:none}
+  @media(max-width:760px){
+    .spaces,.mapping-grid,.checks{grid-template-columns:1fr}
+    .card{padding:16px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section class="card">
+    <h1>Continuidad y homeomorfismos en espacios finitos</h1>
+    <p class="muted" style="margin-top:0">
+      Construí una función entre dos espacios topológicos finitos y analizá si es continua,
+      abierta, biyectiva y homeomorfismo.
+    </p>
+
+    <div class="spaces">
+      <div class="spacebox">
+        <div class="badge">Espacio de partida</div>
+        <h3>X = {a, b, c}</h3>
+        <div class="tau">τ<sub>X</sub> = {∅, {a}, {a,b}, X}</div>
+      </div>
+      <div class="spacebox">
+        <div class="badge">Espacio de llegada</div>
+        <h3>Y = {1, 2, 3}</h3>
+        <div class="tau">τ<sub>Y</sub> = {∅, {1}, {1,2}, Y}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>1. Definí la función f : X → Y</h2>
+    <p class="muted">Elegí la imagen de cada elemento de X.</p>
+
+    <div class="mapping-grid">
+      <div class="mapitem">
+        <label for="fa">f(a)</label>
+        <select id="fa">
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+        </select>
+      </div>
+      <div class="mapitem">
+        <label for="fb">f(b)</label>
+        <select id="fb">
+          <option value="1">1</option><option value="2" selected>2</option><option value="3">3</option>
+        </select>
+      </div>
+      <div class="mapitem">
+        <label for="fc">f(c)</label>
+        <select id="fc">
+          <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="primary" id="analyzeBtn">Analizar función</button>
+      <button class="secondary" id="homeoBtn">Cargar un homeomorfismo</button>
+      <button class="secondary" id="counterBtn">Cargar una biyectiva que no es homeomorfismo</button>
+    </div>
+
+    <div id="summary" class="result">
+      Elegí una función y presioná <strong>Analizar función</strong>.
+    </div>
+  </section>
+
+  <section class="card hidden" id="analysisCard">
+    <h2>2. Análisis</h2>
+
+    <div class="checks">
+      <div class="check">
+        <strong>Inyectividad</strong>
+        <span id="injectiveOut"></span>
+      </div>
+      <div class="check">
+        <strong>Sobreyectividad</strong>
+        <span id="surjectiveOut"></span>
+      </div>
+      <div class="check">
+        <strong>Continuidad</strong>
+        <span id="continuousOut"></span>
+      </div>
+      <div class="check">
+        <strong>Aplicación abierta</strong>
+        <span id="openOut"></span>
+      </div>
+    </div>
+
+    <div class="detail">
+      <h3>Continuidad por preimagen de abiertos</h3>
+      <p>
+        La función es continua si para cada <span class="formula">V ∈ τY</span>,
+        se cumple <span class="formula">f⁻¹(V) ∈ τX</span>.
+      </p>
+      <div id="continuityDetails"></div>
+    </div>
+
+    <div class="detail">
+      <h3>Continuidad usando una base</h3>
+      <p>
+        En este caso podemos usar la base
+        <span class="formula">B = {{1}, {1,2}, Y}</span>.
+        Basta verificar las preimágenes de esos abiertos básicos.
+      </p>
+      <div id="basisDetails"></div>
+    </div>
+
+    <div class="detail">
+      <h3>Conclusión sobre homeomorfismo</h3>
+      <div id="homeoResult" class="result"></div>
+      <p class="small">
+        Acá usamos el criterio: f es homeomorfismo si es biyectiva, continua y abierta.
+        Para una función biyectiva, que sea abierta equivale a que f⁻¹ sea continua.
+      </p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>3. Desafíos</h2>
+
+    <div class="challenge">
+      <div>
+        <strong>Desafío A</strong>
+        <p style="margin:5px 0 0">Construí un homeomorfismo distinto de la función que aparece al abrir la actividad.</p>
+      </div>
+    </div>
+
+    <div class="challenge">
+      <div>
+        <strong>Desafío B</strong>
+        <p style="margin:5px 0 0">Construí una función biyectiva que no sea continua.</p>
+      </div>
+    </div>
+
+    <div class="challenge">
+      <div>
+        <strong>Desafío C</strong>
+        <p style="margin:5px 0 0">Construí una función continua que no sea biyectiva.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const X = ["a","b","c"];
+  const Y = ["1","2","3"];
+
+  const tauX = [
+    [], ["a"], ["a","b"], ["a","b","c"]
+  ];
+  const tauY = [
+    [], ["1"], ["1","2"], ["1","2","3"]
+  ];
+  const basisY = [
+    ["1"], ["1","2"], ["1","2","3"]
+  ];
+
+  function key(setArr){
+    return [...setArr].sort().join("|");
+  }
+
+  const tauXKeys = new Set(tauX.map(key));
+  const tauYKeys = new Set(tauY.map(key));
+
+  function fmt(A){
+    if(A.length===0) return "∅";
+    return "{" + A.join(", ") + "}";
+  }
+
+  function getMap(){
+    return {
+      "a": document.getElementById("fa").value,
+      "b": document.getElementById("fb").value,
+      "c": document.getElementById("fc").value
+    };
+  }
+
+  function preimage(V,f){
+    return X.filter(x => V.includes(f[x]));
+  }
+
+  function image(U,f){
+    return [...new Set(U.map(x => f[x]))].sort();
+  }
+
+  function isInjective(f){
+    return new Set(Object.values(f)).size === X.length;
+  }
+
+  function isSurjective(f){
+    return new Set(Object.values(f)).size === Y.length;
+  }
+
+  function continuityData(f, family=tauY){
+    return family.map(V => {
+      const pre = preimage(V,f);
+      return {
+        set:V,
+        pre:pre,
+        ok:tauXKeys.has(key(pre))
+      };
+    });
+  }
+
+  function opennessData(f){
+    return tauX.map(U => {
+      const im = image(U,f);
+      return {
+        set:U,
+        im:im,
+        ok:tauYKeys.has(key(im))
+      };
+    });
+  }
+
+  function yesNo(ok, yesText, noText){
+    return '<span class="' + (ok ? "yes" : "no") + '">' + (ok ? "Sí" : "No") + '.</span> ' + (ok ? yesText : noText);
+  }
+
+  function renderList(items, type){
+    return "<ul>" + items.map(item => {
+      if(type==="continuity"){
+        return '<li>' + fmt(item.set) + ' ⟶ f⁻¹(' + fmt(item.set) + ') = ' + fmt(item.pre) +
+        (item.ok ? " ✓ pertenece a τX" : " ✗ no pertenece a τX") + '</li>';
+      } else {
+        return '<li>' + fmt(item.set) + ' ⟶ f(' + fmt(item.set) + ') = ' + fmt(item.im) +
+        (item.ok ? " ✓ pertenece a τY" : " ✗ no pertenece a τY") + '</li>';
+      }
+    }).join("") + "</ul>";
+  }
+
+  function analyze(){
+    const f = getMap();
+
+    const inj = isInjective(f);
+    const surj = isSurjective(f);
+    const bij = inj && surj;
+
+    const contData = continuityData(f,tauY);
+    const continuous = contData.every(x=>x.ok);
+
+    const basisData = continuityData(f,basisY);
+    const basisContinuous = basisData.every(x=>x.ok);
+
+    const openData = opennessData(f);
+    const open = openData.every(x=>x.ok);
+
+    const homeo = bij && continuous && open;
+
+    document.getElementById("analysisCard").classList.remove("hidden");
+
+    document.getElementById("injectiveOut").innerHTML =
+      yesNo(inj,"Las imágenes de a, b y c son distintas.","Hay al menos dos puntos de X con la misma imagen.");
+
+    document.getElementById("surjectiveOut").innerHTML =
+      yesNo(surj,"Todo elemento de Y tiene preimagen.","Algún elemento de Y no es imagen de ningún punto.");
+
+    document.getElementById("continuousOut").innerHTML =
+      yesNo(continuous,"Las preimágenes de todos los abiertos de Y son abiertas en X.",
+      "Hay al menos un abierto de Y cuya preimagen no es abierta en X.");
+
+    document.getElementById("openOut").innerHTML =
+      yesNo(open,"La imagen de todo abierto de X es abierta en Y.",
+      "Hay al menos un abierto de X cuya imagen no es abierta en Y.");
+
+    document.getElementById("continuityDetails").innerHTML = renderList(contData,"continuity");
+    document.getElementById("basisDetails").innerHTML =
+      renderList(basisData,"continuity") +
+      '<p><strong>Conclusión con la base:</strong> ' + (basisContinuous ? "alcanza para concluir que f es continua." : "la continuidad falla ya sobre un abierto básico.") + '</p>';
+
+    const homeoBox = document.getElementById("homeoResult");
+    if(homeo){
+      homeoBox.className = "result ok";
+      homeoBox.innerHTML = "<strong>Sí. f es un homeomorfismo.</strong><br>Es biyectiva, continua y abierta.";
+    }else{
+      homeoBox.className = "result bad";
+      const reasons = [];
+      if(!bij) reasons.push("no es biyectiva");
+      if(!continuous) reasons.push("no es continua");
+      if(!open) reasons.push("no es abierta");
+      homeoBox.innerHTML = "<strong>No. f no es un homeomorfismo.</strong><br>Falla porque " + reasons.join(", ") + ".";
+    }
+
+    const summary = document.getElementById("summary");
+    summary.className = "result " + (homeo ? "ok" : (bij ? "warn" : ""));
+    summary.innerHTML =
+      "<strong>f(a)=" + f.a + ", f(b)=" + f.b + ", f(c)=" + f.c + "</strong><br>" +
+      "Biyectiva: " + (bij ? "sí" : "no") + " · Continua: " + (continuous ? "sí" : "no") + " · Abierta: " + (open ? "sí" : "no") + " · Homeomorfismo: " + (homeo ? "sí" : "no") + ".";
+  }
+
+  function setMap(a,b,c){
+    document.getElementById("fa").value=a;
+    document.getElementById("fb").value=b;
+    document.getElementById("fc").value=c;
+    analyze();
+  }
+
+  document.getElementById("analyzeBtn").addEventListener("click", analyze);
+  document.getElementById("homeoBtn").addEventListener("click",()=>setMap("1","2","3"));
+  document.getElementById("counterBtn").addEventListener("click",()=>setMap("2","1","3"));
+
+})();
+</script>
+</body>
+</html>
